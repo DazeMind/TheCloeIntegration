@@ -1,0 +1,52 @@
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: the_cloe_django
+    ports:
+      - "8000:8000"
+    environment:
+      DB_ENGINE: mssql
+      DB_HOST: host.docker.internal
+      DB_PORT: "1433"
+      DB_NAME: the_cloe
+      DB_USER: TestLocal
+      DB_PASSWORD: TestLocal
+      DB_DRIVER: ODBC Driver 18 for SQL Server
+      DB_OPTIONS_EXTRA_PARAMS: TrustServerCertificate=yes,Encrypt=yes
+      ALLOWED_HOSTS: "*"
+      SIMPLEAPI_KEY: ${SIMPLEAPI_KEY:-test-key}
+      SIMPLEAPI_BASE_URL: ${SIMPLEAPI_BASE_URL:-https://api.simpleapi.cl/api/v1}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-thecloe-dev-secret-key-change-me}
+      CORS_ORIGINS: http://localhost:3000
+      DEBUG: "True"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend:/app
+    networks:
+      - thecloe-network
+    command: >
+      sh -c "python wait_for_db.py 20 3 && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+
+  react:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: the_cloe_react
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_DJANGO_URL: http://localhost:8000
+    depends_on:
+      - django
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - thecloe-network
+
+networks:
+  thecloe-network:
+    driver: bridge
