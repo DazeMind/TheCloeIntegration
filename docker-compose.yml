@@ -18,6 +18,11 @@ services:
       ALLOWED_HOSTS: "*"
       SIMPLEAPI_KEY: ${SIMPLEAPI_KEY:-test-key}
       SIMPLEAPI_BASE_URL: ${SIMPLEAPI_BASE_URL:-https://api.simpleapi.cl/api/v1}
+      SIMPLEFACTURA_EMAIL: ${SIMPLEFACTURA_EMAIL:-}
+      SIMPLEFACTURA_PASSWORD: ${SIMPLEFACTURA_PASSWORD:-}
+      SIMPLEFACTURA_BASE_URL: ${SIMPLEFACTURA_BASE_URL:-https://api.simplefactura.cl}
+      SIMPLEFACTURA_SUCURSAL: ${SIMPLEFACTURA_SUCURSAL:-Casa_Matriz}
+      SIMPLEFACTURA_MODE: ${SIMPLEFACTURA_MODE:-simulate}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-thecloe-dev-secret-key-change-me}
       CORS_ORIGINS: http://localhost:3000
       DEBUG: "True"

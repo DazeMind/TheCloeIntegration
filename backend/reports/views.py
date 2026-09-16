@@ -2,9 +2,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.db.models import Sum
+from django.utils import timezone
 
-from integrations.models import DocumentoTributario, LogConsulta
-from .serializers import ResumenReporteSerializer, EstadoDocumentoSerializer
+from integrations.models import DocumentoTributario, LogConsultaAPI
 
 
 class ReporteViewSet(viewsets.ViewSet):
@@ -15,13 +16,14 @@ class ReporteViewSet(viewsets.ViewSet):
         """Resumen ejecutivo de la integración."""
         docs = DocumentoTributario.objects.all()
         total = docs.count()
-        emitidos = docs.filter(estado='EMITIDO').count()
+        aceptados = docs.filter(estado='ACEPTADO').count()
         rechazados = docs.filter(estado='RECHAZADO').count()
-        pendientes = docs.filter(estado='PENDIENTE').count()
+        errores = docs.filter(estado='ERROR').count()
+        pendientes = docs.filter(estado__in=['PENDIENTE', 'ENVIADO']).count()
+        emitidos = aceptados
         monto_total = docs.aggregate(total=Sum('monto_total'))['total'] or 0
         tasa_exito = float(emitidos) / float(total) * 100 if total > 0 else 0.0
 
-        from django.utils import timezone
         desde_hoy = timezone.now() - timezone.timedelta(days=7)
         ultimos_7 = docs.filter(fecha_creacion__gte=desde_hoy).count()
         desde_30 = timezone.now() - timezone.timedelta(days=30)
@@ -30,7 +32,8 @@ class ReporteViewSet(viewsets.ViewSet):
         return Response({
             "total_emisiones": total,
             "emitidos": emitidos,
-            "rechazados": rechazados,
+            "rechazados": rechazados + errores,
+            "errores": errores,
             "pendientes": pendientes,
             "monto_total": float(monto_total),
             "tasa_exito": round(tasa_exito, 2),
@@ -43,10 +46,11 @@ class ReporteViewSet(viewsets.ViewSet):
         """Documentos agrupados por estado."""
         docs = DocumentoTributario.objects.all()
         estados = []
-        for estado, label in [('EMITIDO', 'Emitido'), ('RECHAZADO', 'Rechazado'), ('PENDIENTE', 'Pendiente')]:
+        for estado, label in DocumentoTributario.ESTADO_CHOICES:
             qs = docs.filter(estado=estado)
             estados.append({
                 "estado": estado,
+                "label": label,
                 "cantidad": qs.count(),
                 "monto_total": float(qs.aggregate(total=Sum('monto_total'))['total'] or 0),
             })
@@ -65,7 +69,13 @@ class ReporteViewSet(viewsets.ViewSet):
     def logs(self, request):
         """Logs de consultas realizadas."""
         limit = int(request.query_params.get('limit', 50))
-        logs = LogConsulta.objects.all()[:limit]
-        from integrations.serializers import LogConsultaSerializer
-        serializer = LogConsultaSerializer(logs, many=True)
-        return Response(serializer.data)
+        logs = LogConsultaAPI.objects.all()[:limit]
+        data = [{
+            "endpoint": l.endpoint,
+            "metodo_http": l.metodo_http,
+            "codigo_respuesta_http": l.codigo_respuesta_http,
+            "duracion_ms": l.duracion_ms,
+            "mensaje_error": l.mensaje_error,
+            "fecha_consulta": l.fecha_consulta,
+        } for l in logs]
+        return Response(data)

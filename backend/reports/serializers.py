@@ -3,8 +3,6 @@ from django.db.models import Count, Sum
 from django.utils import timezone
 from datetime import timedelta
 
-from integrations.models import DocumentoTributario, LogConsulta
-
 
 class ResumenReporteSerializer(serializers.Serializer):
     total_emisiones = serializers.IntegerField()

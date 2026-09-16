@@ -1,9 +1,15 @@
 from rest_framework import serializers
-from .models import ConfiguracionIntegracion
+from .models import Empresa, ConfiguracionEmpresa
 
 
-class ConfiguracionIntegracionSerializer(serializers.ModelSerializer):
+class EmpresaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ConfiguracionIntegracion
-        fields = '__all__'
-        read_only_fields = ['fecha_creacion', 'fecha_actualizacion']
+        model = Empresa
+        fields = ['id', 'rut_emisor', 'razon_social', 'activa', 'fecha_creacion']
+        read_only_fields = ['fecha_creacion']
+
+
+class ConfiguracionEmpresaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConfiguracionEmpresa
+        fields = ['id', 'empresa', 'ambiente', 'timbrado', 'prefijo_folio', 'certificado', 'activa']

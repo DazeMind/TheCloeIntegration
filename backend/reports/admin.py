@@ -1,4 +1,4 @@
 from django.contrib import admin  # noqa: F401
 
-# LogConsulta se registra en integrations/admin.py (LogConsultaAdmin).
-# Registrarlo aqui de nuevo provoca AlreadyRegistered al arrancar Django.
+# Logueo de consultas: LogConsultaAPI se registra en integrations/admin.py.
+# Registrarlo acá de nuevo provocaría AlreadyRegistered al arrancar Django.

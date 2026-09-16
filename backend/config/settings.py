@@ -27,12 +27,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third party
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
+    'django_q',
     # Local apps
     'integrations',
-    'credentials',
     'configurations',
     'reports',
+    'sales',
 ]
 
 MIDDLEWARE = [
@@ -134,6 +136,36 @@ CORS_ALLOW_CREDENTIALS = True
 SIMPLEAPI_KEY = os.environ.get('SIMPLEAPI_KEY', '')
 SIMPLEAPI_BASE_URL = os.environ.get('SIMPLEAPI_BASE_URL', 'https://api.simpleapi.cl/api/v1')
 SIMPLEAPI_TIMEOUT = int(os.environ.get('SIMPLEAPI_TIMEOUT', '30'))
+
+# SimpleFactura (emisión de DTE - FASE 2)
+# Credenciales demo de certificación: demo@chilesystems.com / Rv8Il4eV
+SIMPLEFACTURA_EMAIL = os.environ.get('SIMPLEFACTURA_EMAIL', '')
+SIMPLEFACTURA_PASSWORD = os.environ.get('SIMPLEFACTURA_PASSWORD', '')
+SIMPLEFACTURA_BASE_URL = os.environ.get('SIMPLEFACTURA_BASE_URL', 'https://api.simplefactura.cl')
+SIMPLEFACTURA_SUCURSAL = os.environ.get('SIMPLEFACTURA_SUCURSAL', 'Casa_Matriz')
+SIMPLEFACTURA_MODE = os.environ.get('SIMPLEFACTURA_MODE', 'simulate')  # 'live' | 'simulate'
+
+# django-q2 - cola de emisión de DTE. Broker ORM sobre la BD default (SQL Server).
+# NOTA django-q2 >= 1.8: el factory de broker requiere la clave 'orm' con un alias
+# de BD válido. El key heredado 'django_redis': None ya NO selecciona ORM: sin 'orm'
+# el cluster cae al broker Redis y falla en arranque sin Redis disponible.
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 2,
+    'recycle': 500,
+    'timeout': 120,
+    'retry': 180,  # lease/redelivery del cluster; debe ser > timeout
+    'compress': True,
+    'save_limit': 250,
+    'queue_limit': 500,
+    'cpu_affinity': 1,
+    'label': 'Django Q2',
+    'orm': 'default',
+    # Reintentos globales: un task fallido se re-entrega cada `retry` (180s) y
+    # se abandona tras 3 intentos. En django-q2 1.11 NO existe retry per-task
+    # ni max_retries; sin max_attempts (default 0) reintenta para SIEMPRE.
+    'max_attempts': 3,
+}
 
 # Circuit Breaker
 CIRCUIT_BREAKER_FAILURE_THRESHOLD = int(os.environ.get('CIRCUIT_BREAKER_FAILURE_THRESHOLD', '3'))
