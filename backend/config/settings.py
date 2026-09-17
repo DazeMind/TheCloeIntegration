@@ -29,12 +29,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'django_q',
+    # 'django_q',  # ← Desactivado por incompatible con Django 5.2.x
     # Local apps
     'integrations',
     'configurations',
     'reports',
-    'sales',
+    # 'sales',  # ← Comentado temporalmente para permisos de migración
+    'chatbot',  # ← Añadido para el chatbot SII + Gemini
 ]
 
 MIDDLEWARE = [
@@ -188,3 +189,10 @@ LOGGING = {
         'level': os.environ.get('LOG_LEVEL', 'INFO'),
     },
 }
+# ============================================
+# CHATBOT / GEMINI
+# ============================================
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.6-flash')
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

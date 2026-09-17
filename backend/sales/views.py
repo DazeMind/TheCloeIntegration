@@ -2,7 +2,6 @@ import logging
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django_q.tasks import async_task
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
