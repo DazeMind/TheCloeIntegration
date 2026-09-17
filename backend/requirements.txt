@@ -7,6 +7,7 @@ python-dotenv>=1.0
 httpx>=0.27
 pytz>=2024.1
 django-q2>=1.11
+google-genai>=2.0
 
 # Backend SQL Server: requiere mssql-django + pyodbc y el ODBC Driver 17 o 18 instalado en el sistema.
 # Django se mantiene en 5.2 LTS: mssql-django en Django 6.x no soporta DB_CASCADE (multi-cascade-path en SQL Server).

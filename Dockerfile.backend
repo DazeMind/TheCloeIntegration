@@ -21,4 +21,4 @@ COPY ./backend/ .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python wait_for_db.py 20 3 && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python wait_for_db.py 20 3 && (python manage.py makemigrations --dry-run --check || echo '[WARN] Hay modelos sin migraciones pendientes; ejecutando migrate igualmente.') ; python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
